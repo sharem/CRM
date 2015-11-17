@@ -43,9 +43,45 @@ app.get('/', function(req, res) {
 
 // API
 var apiRouter = express.Router();
+// middleware to use for all requests
+apiRouter.use(function(req, res, next) {
+    // do logging
+    console.log('Somebody just came to our app!');
+    next();
+});
 apiRouter.get('/', function(req, res) {
    res.json({ message: 'welcome to our API!' }); 
 });
+
+// /users
+apiRouter.route('/users')
+    // create a user (accessed at POST http://localhost:8080/api/users)
+    .post(function(req, res) {
+        var user = new User();
+        user.name = req.body.name;
+        user.username = req.body.username;
+        user.password = req.body.password;
+        // save the user and check for errors
+        user.save(function(err) {
+            if (err) {
+                // duplicate entry
+                if (err.code == 11000) {
+                    return res.json({ success: false, message: 'A user with that username already exists. '});
+                } else {
+                    return res.send(err);
+                }
+            }
+            res.json({ message: 'User created!' });
+        });
+    })
+    // get all the users (accessed at GET http://localhost:8080/api/users)
+    .get(function(req, res) {
+        User.find(function(err, users) {
+            if (err) 
+                res.send(err);
+            res.json(users);
+        });
+    });
 
 app.use('/api', apiRouter);
 
