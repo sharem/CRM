@@ -3,10 +3,16 @@ var express    = require('express');
 var app        = express();
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
-var moongose   = require('mongoose');
+var mongoose   = require('mongoose');
+
+// schemas
+var User       = require('./app/models/user');
 
 // set app port
 var port       = process.env.PORT || 8080;
+
+// db connection
+mongoose.connect('mongodb://node:node@ds047514.mongolab.com:47514/crm');
 
 
 /*  APP CONFIGURATION  */
