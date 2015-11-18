@@ -4,12 +4,16 @@ var app        = express();
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var mongoose   = require('mongoose');
+var jwt        = require('jsonwebtoken');
 
 // schemas
 var User       = require('./app/models/user');
 
 // set app port
 var port       = process.env.PORT || 8080;
+
+// secret
+var secret     = 'supersecretword';
 
 // db connection
 mongoose.connect('mongodb://node:node@ds047514.mongolab.com:47514/crm');
@@ -18,7 +22,7 @@ mongoose.connect('mongodb://node:node@ds047514.mongolab.com:47514/crm');
 /*  APP CONFIGURATION  */
 /* ------------------- */
 // to grab info from POST requests
-app.use(bodyParser.urlencoded({ extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // to handle CORS requests
@@ -42,14 +46,77 @@ app.get('/', function(req, res) {
 
 // API
 var apiRouter = express.Router();
+// route for authenticating users (POST http://localhost:8080/api/authenticate)
+apiRouter.post('/authenticate', function(req, res){
+    // find user
+    User.findOne({ username: req.body.username }).select('name username password').exec(function(err, user) {
+        if (err)
+           throw err;
+        // username not found
+        if (!user) {
+            res.json( {
+                success: false,
+                message: 'Authentication failed. User not found.'
+            });
+        // check if password match
+        } else {
+            var validPassword = user.comparePassword(req.body.password);
+            if (!validPassword) {
+                res.json({
+                    success: false,
+                    message: 'Authentication failed.'
+                });
+            // user found & passwords match
+            } else {
+                // create token
+                var token = jwt.sign({ 
+                    name: user.name,
+                    username: user.username
+                }, secret, {
+                    expiresInMinutes: 1440 // 24h
+                });
+                // return both token and information
+                res.json({
+                    success: true,
+                    message: 'Token sent',
+                    token: token
+                });
+            }
+        }
+    });
+});
 // middleware to use for all requests
 apiRouter.use(function(req, res, next) {
-    // do logging
-    console.log('Somebody just came to our app!');
-    next();
+    // check header || URL params || POST params for token
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+    // decode token
+    if (token) {
+        jwt.verify(token, secret, function(err, decoded) {
+            if (err) {
+                return res.status(403).send({
+                    success: false,
+                    message: 'Failed to authenticate token.'
+                });
+            } else {
+                req.decoded = decoded;
+                next();
+            }
+        });
+    // if there is no token return 403 (access forbidden) and error message
+    } else {
+        return res.status(403).send({
+            success: false,
+            message: 'No token provided.'
+        });
+    }
 });
+
 apiRouter.get('/', function(req, res) {
    res.json({ message: 'welcome to our API!' }); 
+});
+
+apiRouter.get('/me', function(req, res) {
+    res.send(req.decoded);
 });
 
 // /users
