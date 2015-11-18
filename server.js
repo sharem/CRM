@@ -35,7 +35,6 @@ app.use(morgan('dev'));
 
 /*  API ROUTES  */
 /* ------------ */
-
 // home page
 app.get('/', function(req, res) {
     res.send('Welcome to the home page!');
@@ -83,7 +82,47 @@ apiRouter.route('/users')
         });
     });
 
+// /users:user_id
+apiRouter.route('/users/:user_id')
+    // get the user (accessed at GET http://localhost:8080/api/users/:user_id)
+    .get(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+            if (err)
+                res.send(err);
+            res.json(user);
+        });
+    })
+    // update the user with the id (accessed at PUT http://localhost:8080/api/users/:user_id)
+    .put(function(req, res) {
+         User.findById(req.params.user_id, function(err, user) {
+            if (err)
+                res.send(err);
+            // update info only if it's new
+            if (req.body.name)
+                user.name = req.body.name;
+            if (req.body.username)
+                user.username = req.body.username;
+            if (req.body.password)
+                user.password = req.body.password;
+            user.save(function(err) {
+                if (err)
+                    res.send(err);
+                res.json({ message: 'User updated!' });
+            })
+        });
+    })
+    // delete the user with the id (accessed at DELETE http://localhost:8080/api/users/:user_id)
+    .delete(function(req, res) {
+        User.remove({
+            _id: req.params.user_id    
+        }, function(err, user) {
+            if (err)
+                return res.send(err);
+            res.json({ message: 'User successfully deleted' });
+        });
+    });
 app.use('/api', apiRouter);
+
 
 /*  START SERVER  */
 /* -------------- */
