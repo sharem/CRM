@@ -7,7 +7,7 @@ var morgan     = require('morgan');
 var mongoose   = require('mongoose');
 var path       = require('path');
 // config file
-var config     = require('./config.js')
+var config     = require('./config')
 
 
 

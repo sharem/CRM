@@ -2,7 +2,7 @@ var User   = require('../models/user');
 var jwt    = require('jsonwebtoken');
 var config = require('../../config');
 
-module.exports = function (app, express) {
+module.exports = function(app, express) {
     var apiRouter = express.Router();
     // route for authenticating users (POST http://localhost:8080/api/authenticate)
     apiRouter.post('/authenticate', function(req, res){
@@ -146,5 +146,5 @@ module.exports = function (app, express) {
                 res.json({ message: 'User successfully deleted' });
             });
         });
-    app.use('/api', apiRouter);
+    return apiRouter;
 }
