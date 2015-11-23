@@ -5,9 +5,9 @@ angular.module('mainController', []).controller('mainController', function($root
     // check to see if a user is logged in on every request
     $rootScope.$on('$routeChangeStart', function() {
         vm.loggedIn = Auth.isLoggedIn();
-        // get user information on route change
+        // get user information on route change --- TODO: Fix this...
         Auth.getUser()
-            .success(function(data) {
+            .then(function(data) {
                 vm.user = data;
             });
     });
