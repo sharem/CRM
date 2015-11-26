@@ -24,11 +24,33 @@ angular.module('userController', ['userService'])
     }).controller('userCreateController', function (User) {
         var vm = this;
         vm.type = 'create';
+        // function to save the new user
         vm.saveUser = function () {
             vm.processing = true;
             // clear message 
-            vm.message = {};
+            vm.message = '';
             User.create(vm.userData)
+                .success(function (data) {
+                    vm.processing = false;
+                    // clear form
+                    vm.userData = {};
+                    vm.message = data.message;
+                });
+        };
+    }).controller('userEditController', function ($routeParams, User) {
+        var vm = this;
+        vm.type = 'edit';
+        //get the user data from the user we want to edit
+        User.get($routeParams.user_id)
+            .success(function (data) {
+                vm.userData = data;
+            });
+        // function to save the new user data
+        vm.saveUser = function () {
+            vm.processing = true;
+            // clear message 
+            vm.message = '';
+            User.update($routeParams.user_id, vm.userData)
                 .success(function (data) {
                     vm.processing = false;
                     // clear form
