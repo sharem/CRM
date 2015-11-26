@@ -1,23 +1,25 @@
 /*  PACKAGES  */
 /* ---------- */
-var express    = require('express');
-var app        = express();
+var express = require('express');
+var app = express();
 var bodyParser = require('body-parser');
-var morgan     = require('morgan');
-var mongoose   = require('mongoose');
-var path       = require('path');
+var morgan = require('morgan');
+var mongoose = require('mongoose');
+var path = require('path');
 // config file
-var config     = require('./config')
+var config = require('./config')
 
 
 
 /*  APP CONFIGURATION  */
 /* ------------------- */
 // to grab info from POST requests
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(bodyParser.json());
 // to handle CORS requests
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,\Authorization');
@@ -39,7 +41,7 @@ app.use('/api', apiRoutes);
 // MAIN CATCHALL ROUTE
 // send users to frontend (NOTE: It is important to put this route after the API routes since we only
 // want it to catch routes not handled by Node)
-app.get('*', function(req, res) {
+app.get('*', function (req, res) {
     res.sendFile(path.join(__dirname + '/public/app/views/index.html'));
 });
 
